@@ -1,0 +1,33 @@
+services:
+  openvarde-kiwix:
+    image: ghcr.io/kiwix/kiwix-serve:3.8.2
+    container_name: openvarde-kiwix
+    restart: unless-stopped
+
+    command:
+      - "--urlRootLocation=/kiwix"
+      - "*.zim"
+
+    volumes:
+      - ./data:/data:ro
+
+    networks:
+      - openvarde
+
+    labels:
+      - "traefik.enable=true"
+
+      # Kiwix skal nås via:
+      # http://openvarde-xxxx.local/kiwix
+      - "traefik.http.routers.openvarde-kiwix.rule=PathPrefix(`/kiwix`)"
+      - "traefik.http.routers.openvarde-kiwix.entrypoints=web"
+
+      # Kiwix lytter internt på 8080 i containeren
+      - "traefik.http.services.openvarde-kiwix.loadbalancer.server.port=8080"
+
+      # Fortell Traefik hvilket nettverk den skal bruke
+      - "traefik.docker.network=openvarde"
+
+networks:
+  openvarde:
+    external: true
